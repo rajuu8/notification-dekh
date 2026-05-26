@@ -1,18 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F4F4F5">
+    android:background="#0F172A">
 
-    <!-- Header -->
+    <!-- TOP HEADER -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#2563EB"
-        android:padding="16dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="#1E3A5F"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="40dp"
+        android:paddingBottom="16dp">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <!-- App Logo -->
+            <LinearLayout
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="#2563EB"
+                android:gravity="center"
+                android:layout_marginEnd="12dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔔"
+                    android:textSize="22sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Notification Dekho"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"/>
+                <TextView
+                    android:id="@+id/tv_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Connecting..."
+                    android:textSize="11sp"
+                    android:textColor="#93C5FD"/>
+            </LinearLayout>
+
+            <!-- Count Badge -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#2563EB"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp">
+                <TextView
+                    android:id="@+id/tv_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Stats Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -20,143 +87,218 @@
             android:gravity="center_vertical">
 
             <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Notification Dekho"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"/>
-
-            <TextView
-                android:id="@+id/tv_count"
+                android:id="@+id/tv_unread"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:textColor="#2563EB"
-                android:background="#FFFFFF"
+                android:text="0 unread"
+                android:textSize="12sp"
+                android:textColor="#60A5FA"
+                android:background="#1E3A8A"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
                 android:paddingTop="3dp"
-                android:paddingBottom="3dp"/>
-        </LinearLayout>
+                android:paddingBottom="3dp"
+                android:layout_marginEnd="8dp"/>
 
-        <TextView
-            android:id="@+id/tv_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Load ho raha hai..."
-            android:textSize="11sp"
-            android:textColor="#BFDBFE"
-            android:layout_marginTop="4dp"/>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"/>
+
+            <Button
+                android:id="@+id/btn_show_qr"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="QR / Code"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#2563EB"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.Button"/>
+
+            <Button
+                android:id="@+id/btn_refresh"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:text="↺"
+                android:textSize="16sp"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#1E3A5F"
+                android:padding="0dp"
+                style="@style/Widget.MaterialComponents.Button"/>
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- QR + Code Card -->
-    <androidx.cardview.widget.CardView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <!-- QR + CODE SECTION (hidden by default) -->
+    <LinearLayout
+        android:id="@+id/layout_qr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="#FFFFFF">
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#1E293B"
+        android:padding="20dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NotiSync app mein scan karo ya code daalo"
+            android:textSize="13sp"
+            android:textColor="#94A3B8"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp"
+            android:orientation="horizontal"
             android:gravity="center">
 
+            <!-- QR Code -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:background="#FFFFFF"
+                    android:padding="8dp"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/iv_qr"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="fitCenter"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="QR Scan karo"
+                    android:textSize="11sp"
+                    android:textColor="#64748B"
+                    android:layout_marginTop="8dp"/>
+            </LinearLayout>
+
+            <!-- Divider -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Apna Code / QR NotiSync app mein daalo"
-                android:textSize="13sp"
-                android:textColor="#555555"
-                android:gravity="center"
-                android:layout_marginBottom="12dp"/>
-
-            <!-- QR Code -->
-            <ImageView
-                android:id="@+id/iv_qr"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:layout_marginBottom="12dp"/>
+                android:text="YA"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#475569"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"/>
 
             <!-- 4 Digit Code -->
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Ya yeh code daalo:"
-                android:textSize="12sp"
-                android:textColor="#888888"/>
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_code"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0000"
-                android:textSize="48sp"
-                android:textStyle="bold"
-                android:textColor="#2563EB"
-                android:letterSpacing="0.3"
-                android:layout_marginTop="4dp"/>
+                <LinearLayout
+                    android:layout_width="140dp"
+                    android:layout_height="140dp"
+                    android:background="#0F172A"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CODE"
+                        android:textSize="11sp"
+                        android:textColor="#64748B"
+                        android:letterSpacing="0.2"/>
+
+                    <TextView
+                        android:id="@+id/tv_code"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0000"
+                        android:textSize="52sp"
+                        android:textStyle="bold"
+                        android:textColor="#3B82F6"
+                        android:letterSpacing="0.2"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Type karo"
+                    android:textSize="11sp"
+                    android:textColor="#64748B"
+                    android:layout_marginTop="8dp"/>
+            </LinearLayout>
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
 
-    <!-- Buttons -->
+        <!-- Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/btn_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Clear All"
+                android:textSize="12sp"
+                android:textColor="#EF4444"
+                android:backgroundTint="#1E293B"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- NOTIFICATIONS SECTION -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
-        android:padding="12dp"
         android:orientation="horizontal"
-        android:gravity="end">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        android:gravity="center_vertical">
 
-        <Button
-            android:id="@+id/btn_clear"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="Clear"
-            android:textSize="12sp"
-            android:textColor="#DC2626"
-            android:backgroundTint="#FEF2F2"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-
-        <Button
-            android:id="@+id/btn_refresh"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="Refresh"
-            android:textSize="12sp"
-            android:textColor="#2563EB"
-            android:backgroundTint="#EFF6FF"
-            android:layout_marginStart="8dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Notifications"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#E2E8F0"/>
     </LinearLayout>
 
-    <!-- Empty -->
+    <!-- Empty State -->
     <TextView
         android:id="@+id/tv_empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Koi notification nahi — NotiSync app mein code daalo!"
-        android:textSize="13sp"
-        android:textColor="#888888"
+        android:text="🔕  Koi notification nahi\nNotiSync app mein code daalo"
+        android:textSize="14sp"
+        android:textColor="#475569"
         android:gravity="center"
-        android:padding="30dp"
+        android:padding="40dp"
         android:visibility="gone"/>
 
-    <!-- List -->
+    <!-- Notification List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="12dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="12dp"
         android:clipToPadding="false"/>
 
 </LinearLayout>
