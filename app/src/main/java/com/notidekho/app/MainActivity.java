@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,11 +21,13 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private NotifAdapter adapter;
-    private TextView tvStatus, tvCount, tvEmpty, tvCode;
-    private ImageView ivQR;
+    private TextView tvStatus, tvCount, tvEmpty, tvCode, tvUnread;
+    private ImageView ivQR, ivLogo;
+    private LinearLayout layoutQR;
     private DatabaseReference dbRef;
     private List<NotifModel> notifList = new ArrayList<>();
     private String uniqueCode;
+    private boolean qrVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +39,12 @@ public class MainActivity extends AppCompatActivity {
         tvCount      = findViewById(R.id.tv_count);
         tvEmpty      = findViewById(R.id.tv_empty);
         tvCode       = findViewById(R.id.tv_code);
+        tvUnread     = findViewById(R.id.tv_unread);
         ivQR         = findViewById(R.id.iv_qr);
+        layoutQR     = findViewById(R.id.layout_qr);
 
-        // Unique code generate karo ya load karo
         uniqueCode = getUniqueCode();
         tvCode.setText(uniqueCode);
-
-        // QR generate karo
         generateQR(uniqueCode);
 
         // Firebase — sirf is user ka data
@@ -50,38 +52,40 @@ public class MainActivity extends AppCompatActivity {
             "https://notisync-82fce-default-rtdb.firebaseio.com"
         ).getReference("users").child(uniqueCode).child("notifications");
 
+        // Code register karo
+        FirebaseDatabase.getInstance(
+            "https://notisync-82fce-default-rtdb.firebaseio.com"
+        ).getReference("codes").child(uniqueCode).setValue(true);
+
         adapter = new NotifAdapter(notifList, dbRef);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        // Code Firebase mein register karo
-        FirebaseDatabase.getInstance(
-            "https://notisync-82fce-default-rtdb.firebaseio.com"
-        ).getReference("codes").child(uniqueCode).setValue(true);
+        // QR toggle
+        findViewById(R.id.btn_show_qr).setOnClickListener(v -> {
+            qrVisible = !qrVisible;
+            layoutQR.setVisibility(qrVisible ? View.VISIBLE : View.GONE);
+        });
 
         findViewById(R.id.btn_clear).setOnClickListener(v -> {
             dbRef.removeValue();
             notifList.clear();
             adapter.notifyDataSetChanged();
             tvCount.setText("0");
+            tvUnread.setText("0 unread");
             tvEmpty.setVisibility(View.VISIBLE);
             Toast.makeText(this, "Sab clear ho gaya!", Toast.LENGTH_SHORT).show();
         });
 
-        findViewById(R.id.btn_refresh).setOnClickListener(v -> {
-            tvStatus.setText("Refresh ho raha hai...");
-            loadNotifications();
-        });
+        findViewById(R.id.btn_refresh).setOnClickListener(v -> loadNotifications());
 
         loadNotifications();
     }
 
     private String getUniqueCode() {
-        // SharedPreferences mein save karo taki app restart pe same code rahe
         android.content.SharedPreferences prefs = getSharedPreferences("notidekho", MODE_PRIVATE);
         String code = prefs.getString("unique_code", null);
         if (code == null) {
-            // 4 digit random code banao
             code = String.format("%04d", new Random().nextInt(10000));
             prefs.edit().putString("unique_code", code).apply();
         }
@@ -91,27 +95,23 @@ public class MainActivity extends AppCompatActivity {
     private void generateQR(String text) {
         try {
             QRCodeWriter writer = new QRCodeWriter();
-            BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, 400, 400);
-            int width = matrix.getWidth();
-            int height = matrix.getHeight();
-            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    bitmap.setPixel(x, y, matrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
-                }
-            }
-            ivQR.setImageBitmap(bitmap);
-        } catch (WriterException e) {
-            e.printStackTrace();
-        }
+            BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, 500, 500);
+            int w = matrix.getWidth(), h = matrix.getHeight();
+            Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
+            for (int x = 0; x < w; x++)
+                for (int y = 0; y < h; y++)
+                    bmp.setPixel(x, y, matrix.get(x, y) ? 0xFF1E3A5F : 0xFFFFFFFF);
+            ivQR.setImageBitmap(bmp);
+        } catch (WriterException e) { e.printStackTrace(); }
     }
 
     private void loadNotifications() {
-        tvStatus.setText("Firebase se load ho raha hai...");
+        tvStatus.setText("Sync ho raha hai...");
         dbRef.orderByChild("time").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 notifList.clear();
+                int unreadCount = 0;
                 for (DataSnapshot child : snapshot.getChildren()) {
                     NotifModel model = new NotifModel();
                     model.key   = child.getKey();
@@ -123,14 +123,15 @@ public class MainActivity extends AppCompatActivity {
                     Long t      = child.child("time").getValue(Long.class);
                     model.time  = t != null ? t : 0L;
                     notifList.add(model);
+                    if (!model.read) unreadCount++;
                 }
                 Collections.reverse(notifList);
                 adapter.notifyDataSetChanged();
                 tvCount.setText(String.valueOf(notifList.size()));
-                tvStatus.setText("Code: " + uniqueCode + " — " + notifList.size() + " notifications");
+                tvUnread.setText(unreadCount + " unread");
+                tvStatus.setText("Live sync — " + notifList.size() + " notifications");
                 tvEmpty.setVisibility(notifList.isEmpty() ? View.VISIBLE : View.GONE);
             }
-
             @Override
             public void onCancelled(DatabaseError error) {
                 tvStatus.setText("Error: " + error.getMessage());
