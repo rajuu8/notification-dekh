@@ -123,6 +123,18 @@
                 android:backgroundTint="#1E3A5F"
                 android:padding="0dp"
                 style="@style/Widget.MaterialComponents.Button"/>
+
+            <Button
+                android:id="@+id/btn_audio"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="🎧 Audio"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#16A34A"
+                android:layout_marginStart="8dp"
+                style="@style/Widget.MaterialComponents.Button"/>
+
         </LinearLayout>
     </LinearLayout>
 
