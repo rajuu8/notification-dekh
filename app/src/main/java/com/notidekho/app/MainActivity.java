@@ -1,5 +1,6 @@
 package com.notidekho.app;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
@@ -22,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private NotifAdapter adapter;
     private TextView tvStatus, tvCount, tvEmpty, tvCode, tvUnread;
-    private ImageView ivQR, ivLogo;
+    private ImageView ivQR;
     private LinearLayout layoutQR;
     private DatabaseReference dbRef;
     private List<NotifModel> notifList = new ArrayList<>();
@@ -47,12 +48,10 @@ public class MainActivity extends AppCompatActivity {
         tvCode.setText(uniqueCode);
         generateQR(uniqueCode);
 
-        // Firebase — sirf is user ka data
         dbRef = FirebaseDatabase.getInstance(
             "https://notisync-82fce-default-rtdb.firebaseio.com"
         ).getReference("users").child(uniqueCode).child("notifications");
 
-        // Code register karo
         FirebaseDatabase.getInstance(
             "https://notisync-82fce-default-rtdb.firebaseio.com"
         ).getReference("codes").child(uniqueCode).setValue(true);
@@ -65,6 +64,11 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_show_qr).setOnClickListener(v -> {
             qrVisible = !qrVisible;
             layoutQR.setVisibility(qrVisible ? View.VISIBLE : View.GONE);
+        });
+
+        // Audio button — AudioActivity kholo
+        findViewById(R.id.btn_audio).setOnClickListener(v -> {
+            startActivity(new Intent(this, AudioActivity.class));
         });
 
         findViewById(R.id.btn_clear).setOnClickListener(v -> {
