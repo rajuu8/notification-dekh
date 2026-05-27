@@ -2,8 +2,8 @@ package com.notidekho.app;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,37 +25,47 @@ public class AudioActivity extends AppCompatActivity {
     private Button btnListen, btnStop;
     private String userCode;
     private boolean isListening = false;
-    private boolean autoConnect  = false;
+    private boolean autoConnect = false;
+    private AudioManager audioManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio);
 
-        userCode      = getSharedPreferences("notidekho", MODE_PRIVATE)
+        userCode    = getSharedPreferences("notidekho", MODE_PRIVATE)
                 .getString("unique_code", null);
-        autoConnect   = getSharedPreferences("notidekho", MODE_PRIVATE)
+        autoConnect = getSharedPreferences("notidekho", MODE_PRIVATE)
                 .getBoolean("auto_audio", false);
 
-        tvStatus      = findViewById(R.id.tv_audio_status);
+        tvStatus       = findViewById(R.id.tv_audio_status);
         tvPhone1Status = findViewById(R.id.tv_phone1_status);
-        btnListen     = findViewById(R.id.btn_listen);
-        btnStop       = findViewById(R.id.btn_stop);
+        btnListen      = findViewById(R.id.btn_listen);
+        btnStop        = findViewById(R.id.btn_stop);
+
+        // Speaker force on
+        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+        audioManager.setSpeakerphoneOn(true);
+        audioManager.setStreamVolume(
+            AudioManager.STREAM_VOICE_CALL,
+            audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),
+            0
+        );
 
         audioRef = FirebaseDatabase.getInstance(
             "https://notisync-82fce-default-rtdb.firebaseio.com"
         ).getReference("users").child(userCode).child("audio");
 
-        // Phone 1 ka status dekho
         audioRef.child("status").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snap) {
                 String s = snap.getValue(String.class);
                 if ("streaming".equals(s)) {
-                    tvPhone1Status.setText("🟢 Phone 1 streaming kar raha hai");
+                    tvPhone1Status.setText("Phone 1 streaming kar raha hai");
                     tvPhone1Status.setTextColor(0xFF16A34A);
-                } else if ("idle".equals(s) || s == null) {
-                    tvPhone1Status.setText("⚪ Phone 1 ready hai");
+                } else {
+                    tvPhone1Status.setText("Phone 1 ready hai");
                     tvPhone1Status.setTextColor(0xFF94A3B8);
                 }
             }
@@ -82,7 +92,6 @@ public class AudioActivity extends AppCompatActivity {
 
         initAgora();
 
-        // Auto connect
         if (autoConnect) {
             startListening();
         }
@@ -98,10 +107,14 @@ public class AudioActivity extends AppCompatActivity {
                 public void onJoinChannelSuccess(String ch, int uid, int e) {
                     runOnUiThread(() -> {
                         isListening = true;
-                        tvStatus.setText("🎧 Sun raha hai...");
+                        tvStatus.setText("Sun raha hai...");
                         tvStatus.setTextColor(0xFF16A34A);
                         btnListen.setEnabled(false);
                         btnStop.setEnabled(true);
+                        audioManager.setSpeakerphoneOn(true);
+                        engine.setEnableSpeakerphone(true);
+                        engine.adjustPlaybackSignalVolume(400);
+                        engine.muteAllRemoteAudioStreams(false);
                     });
                 }
                 @Override
@@ -115,11 +128,17 @@ public class AudioActivity extends AppCompatActivity {
                     });
                 }
                 @Override
-                public void onUserOffline(int uid, int reason) {
+                public void onRemoteAudioStateChanged(int uid, int state, int reason, int elapsed) {
                     runOnUiThread(() -> {
-                        tvStatus.setText("Phone 1 ne band kiya");
-                        tvStatus.setTextColor(0xFFEF4444);
+                        if (state == 2) {
+                            tvStatus.setText("Audio aa raha hai!");
+                            tvStatus.setTextColor(0xFF16A34A);
+                        }
                     });
+                }
+                @Override
+                public void onUserOffline(int uid, int reason) {
+                    runOnUiThread(() -> tvStatus.setText("Phone 1 ne band kiya"));
                 }
             };
             engine = RtcEngine.create(cfg);
@@ -127,7 +146,7 @@ public class AudioActivity extends AppCompatActivity {
             engine.setClientRole(Constants.CLIENT_ROLE_AUDIENCE);
             engine.enableAudio();
             engine.setAudioProfile(
-                Constants.AUDIO_PROFILE_MUSIC_HIGH_QUALITY,
+                Constants.AUDIO_PROFILE_DEFAULT,
                 Constants.AUDIO_SCENARIO_CHATROOM
             );
             engine.setEnableSpeakerphone(true);
@@ -139,8 +158,15 @@ public class AudioActivity extends AppCompatActivity {
     }
 
     private void startListening() {
+        ChannelMediaOptions options = new ChannelMediaOptions();
+        options.clientRoleType = Constants.CLIENT_ROLE_AUDIENCE;
+        options.channelProfile = Constants.CHANNEL_PROFILE_LIVE_BROADCASTING;
+        options.autoSubscribeAudio = true;
+        options.autoSubscribeVideo = false;
+        options.publishMicrophoneTrack = false;
+
+        engine.joinChannel(AGORA_TOKEN, CHANNEL, 0, options);
         audioRef.child("request").setValue("start");
-        engine.joinChannel(AGORA_TOKEN, CHANNEL, 0, null);
         tvStatus.setText("Connect ho raha hai...");
         btnListen.setEnabled(false);
     }
@@ -168,6 +194,8 @@ public class AudioActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        audioManager.setSpeakerphoneOn(false);
+        audioManager.setMode(AudioManager.MODE_NORMAL);
         if (engine != null) {
             RtcEngine.destroy();
             engine = null;
