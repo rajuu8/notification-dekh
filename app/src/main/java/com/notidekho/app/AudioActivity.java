@@ -15,7 +15,7 @@ import io.agora.rtc2.*;
 public class AudioActivity extends AppCompatActivity {
 
     private static final String AGORA_APP_ID = "f5a163996c7b4ff699c03a163c4c66a6";
-    private static final String AGORA_TOKEN  = "007eJxTYEjcGPF2oqXX1aebL5w8bbc3K+7Np+3HrKWeRmb2um/V4lJQYEgzTTQ0M7a0NEs2TzJJSzOztEw2MAYJJZskm5klmjnZimU1BDIytC6ZwMrIAIEgPgdDXn5JZnFlXjIDAwBVwCH4";
+    private static final String AGORA_TOKEN  = "007eJxTYPDcrfss67vHsxKdtW5TBR1t6hQ4oqKPRgt1diz64KrxfZYCQ5ppoqGZsaWlWbJ5kklampmlZbKBMUgo2STZzCzRLOa8WFZDICPD7yOPGRkZIBDE52PIyy/JLK7MS45PLE3JzGdgAABXdyNX";
     private static final String CHANNEL      = "notisync_audio";
     private static final int MIC_PERM        = 300;
 
@@ -69,7 +69,6 @@ public class AudioActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.RECORD_AUDIO}, MIC_PERM);
             } else {
                 startListening();
-                // Auto connect save karo
                 getSharedPreferences("notidekho", MODE_PRIVATE)
                     .edit().putBoolean("auto_audio", true).apply();
             }
@@ -83,7 +82,7 @@ public class AudioActivity extends AppCompatActivity {
 
         initAgora();
 
-        // Auto connect — agar pehle permission di thi
+        // Auto connect
         if (autoConnect) {
             startListening();
         }
@@ -124,7 +123,6 @@ public class AudioActivity extends AppCompatActivity {
                 }
             };
             engine = RtcEngine.create(cfg);
-            // IMPORTANT: Audience mode - sirf suno
             engine.setChannelProfile(Constants.CHANNEL_PROFILE_LIVE_BROADCASTING);
             engine.setClientRole(Constants.CLIENT_ROLE_AUDIENCE);
             engine.enableAudio();
@@ -132,9 +130,8 @@ public class AudioActivity extends AppCompatActivity {
                 Constants.AUDIO_PROFILE_MUSIC_HIGH_QUALITY,
                 Constants.AUDIO_SCENARIO_CHATROOM
             );
-            // Speaker on karo
             engine.setEnableSpeakerphone(true);
-            engine.adjustPlaybackSignalVolume(400); // Volume boost
+            engine.adjustPlaybackSignalVolume(400);
             engine.muteAllRemoteAudioStreams(false);
         } catch (Exception e) {
             e.printStackTrace();
